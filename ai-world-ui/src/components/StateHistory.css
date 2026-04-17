@@ -1,0 +1,113 @@
+.state-history {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.history-toggle {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(74, 158, 255, 0.1);
+  border: 1px solid #4a9eff;
+  color: #4a9eff;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.history-toggle:hover:not(:disabled) {
+  background: rgba(74, 158, 255, 0.2);
+}
+
+.history-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.history-panel {
+  margin-top: 12px;
+  background: rgba(30, 30, 50, 0.6);
+  border: 2px solid #3d3d6b;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.history-note {
+  padding: 12px 16px;
+  color: #5a5a7a;
+  font-size: 12px;
+  border-bottom: 1px solid #3d3d6b;
+  margin: 0;
+}
+
+.history-list {
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+  background: rgba(60, 60, 100, 0.2);
+}
+
+.history-list::-webkit-scrollbar-thumb {
+  background: rgba(74, 158, 255, 0.3);
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 158, 255, 0.5);
+}
+
+.history-item {
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: #b0b0c0;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(61, 61, 107, 0.3);
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-item:hover:not(:disabled) {
+  background: rgba(74, 158, 255, 0.1);
+  color: #4a9eff;
+}
+
+.history-item.active {
+  background: rgba(74, 158, 255, 0.2);
+  color: #4a9eff;
+  border-left: 3px solid #4a9eff;
+  padding-left: 13px;
+}
+
+.history-item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.history-index {
+  font-weight: 700;
+}
+
+.history-turn {
+  font-size: 10px;
+  color: #5a5a7a;
+}
+
+.no-history {
+  padding: 20px;
+  text-align: center;
+  color: #5a5a7a;
+}

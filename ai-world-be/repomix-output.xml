@@ -1,0 +1,322 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+app/expressApp.ts
+app/expressDecorator.ts
+app/registerAutowireComponents.ts
+app/registerControllers.ts
+controllers/index.ts
+controllers/SampleController.test.ts
+controllers/SampleController.ts
+index.ts
+models/SampleModel.ts
+repositories/index.ts
+repositories/SampleRepository.ts
+services/index.ts
+services/SampleService.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="app/expressApp.ts">
+import express, {Express} from "express";
+import {registerExpressApp} from "./expressDecorator";
+import cors from "cors";
+import bodyParser from "body-parser";
+
+const app: Express = express();
+
+registerExpressApp(app);
+
+app.use(cors());
+app.use(bodyParser.urlencoded({extended: false, limit: '1mb'}));
+app.use(bodyParser.json({type: 'application/json', limit: '1mb'}));
+app.use(bodyParser.text({type: 'text/html', limit: '1mb'}));
+
+export default app;
+</file>
+
+<file path="app/expressDecorator.ts">
+import {Express, Request, Response} from 'express';
+
+type ExpressHandler = (req: Request, res: Response) => void;
+
+let expressApp: Express = null;
+let expressPrefix: string = '';
+
+export const registerExpressApp = (app: Express, prefix: string = '') => {
+  expressApp = app;
+  expressPrefix = prefix;
+};
+
+export const ExpressMapping: any = function (path: string, method: 'get' | 'post' | 'put' | 'delete' | 'use'): any {
+  return function (targetInstance: any, methodName: string, context: any = {}): ExpressHandler {
+    function replaceMethod(req: Request, res: Response) {
+      try {
+        context.value.call(targetInstance, req, res);
+      } catch (error) {
+        res.setHeader('Content-Type', 'application/json');
+        res.status(500);
+        res.send(error);
+      }
+    }
+
+    if (path && expressApp) {
+      expressApp[method](expressPrefix + path, replaceMethod);
+    }
+    return replaceMethod;
+  };
+};
+
+export const GetMapping: any = function (path: string): any {
+  return ExpressMapping(path, 'get');
+};
+
+export const PostMapping: any = function (path: string): any {
+  return ExpressMapping(path, 'post');
+};
+
+export const PutMapping: any = function (path: string): any {
+  return ExpressMapping(path, 'put');
+};
+
+export const DeleteMapping: any = function (path: string): any {
+  return ExpressMapping(path, 'delete');
+};
+
+export const UseMapping: any = function (path: string): any {
+  return ExpressMapping(path, 'use');
+};
+
+export const ExpressController = (targetClass: any) => {
+  registerExpressController(targetClass.name, targetClass);
+};
+
+const controllersMap: { [key: string]: any } = {};
+
+export const registerExpressController = (controllerName: string, controller: any) =>
+  controllersMap[controllerName] = new controller();
+
+export const getExpressControllers = () => Object.keys(controllersMap);
+
+export const AutowireComponent = (targetClass: any) => {
+  registerAutowireInstance(targetClass.name, targetClass);
+};
+
+const instancesMap: { [key: string]: any } = {};
+
+export const registerAutowireInstance = (className: string, classItself: any) =>
+  instancesMap[className] = new classItself();
+
+
+export const getAutowireInstances = () => Object.keys(instancesMap);
+
+export const getAutowireInstance = (className: string) => instancesMap[className];
+
+export const Autowire = (className: string) => {
+  return (target: any, fieldName: string, context: any = {}): any => {
+    target[fieldName] = getAutowireInstance(className) ?? context.value;
+  };
+};
+</file>
+
+<file path="app/registerAutowireComponents.ts">
+import * as repositories from "../repositories";
+import * as services from "../services";
+
+export default [...Object.keys(repositories), ...Object.keys(services)];
+</file>
+
+<file path="app/registerControllers.ts">
+import * as controllers from "../controllers";
+
+export default Object.keys(controllers);
+</file>
+
+<file path="controllers/index.ts">
+export * from './SampleController';
+</file>
+
+<file path="controllers/SampleController.test.ts">
+import {SampleServiceInterface} from "../services";
+import {SampleModel} from "../models/SampleModel";
+import {AutowireComponent} from "../app/expressDecorator";
+
+@AutowireComponent
+class SampleService implements SampleServiceInterface {
+  sampleMethod() {
+    return new SampleModel({name: "Test", description: "test"});
+  }
+}
+
+const {SampleController} = require("../controllers");
+
+describe('SampleController', () => {
+  test('sample get', () => {
+    const sampleController = new SampleController();
+    const header = {};
+    let response;
+    sampleController.sampleGet(null, {setHeader: (key, value) => header[key] = value, send: value => response = value});
+    expect(response).toEqual("value1");
+    expect(header['Content-Type']).toEqual('application/json');
+  });
+
+  test('sample2 get', () => {
+    const sampleController = new SampleController();
+    const header = {};
+    let response;
+    sampleController.sample2Get(null, {
+      setHeader: (key, value) => header[key] = value,
+      send: value => response = value
+    });
+    expect(response.value.name).toEqual("Test");
+  });
+
+});
+</file>
+
+<file path="controllers/SampleController.ts">
+import {Request, Response} from "express";
+import {Autowire, ExpressController, GetMapping} from "../app/expressDecorator";
+import {SampleServiceInterface} from "../services";
+
+@ExpressController
+export class SampleController {
+
+  @Autowire("SampleService")
+  sampleService: SampleServiceInterface;
+
+  @GetMapping('/api/sample')
+  sampleGet(req: Request, res: Response) {
+    res.setHeader('Content-Type', 'application/json');
+    res.send("value1");
+  }
+
+  @GetMapping('/api/sampleValue')
+  sample2Get(req: Request, res: Response) {
+    res.setHeader('Content-Type', 'application/json');
+    res.send({value: this.sampleService.sampleMethod()});
+  }
+
+}
+</file>
+
+<file path="index.ts">
+import {Request, Response} from "express";
+import app from './app/expressApp';
+import registerAutowireComponents from './app//registerAutowireComponents';
+import registeredControllers from './app/registerControllers';
+
+console.log('Starting...');
+console.log("Registered autowire components:", registerAutowireComponents.join(", "));
+console.log("Registered express controllers:", registeredControllers.join(", "));
+
+app.get('/*', (req: Request, res: Response) => {
+  res.send('App is up!')
+});
+
+const port = process.env.API_PORT || 3080;
+
+app.listen(port, () => {
+  console.log(`Listening at ${port}`);
+});
+</file>
+
+<file path="models/SampleModel.ts">
+export class SampleModel {
+  name: string;
+  description?: string;
+
+  constructor(values?: SampleModel) {
+    this.name = values?.name;
+    this.description = values?.description;
+  }
+}
+</file>
+
+<file path="repositories/index.ts">
+export * from './SampleRepository';
+</file>
+
+<file path="repositories/SampleRepository.ts">
+import {AutowireComponent} from "../app/expressDecorator";
+import {SampleModel} from "../models/SampleModel";
+
+export interface SampleRepositoryInterface {
+  getSampleData: () => SampleModel;
+}
+
+@AutowireComponent
+export class SampleRepository {
+  getSampleData(): SampleModel {
+    return new SampleModel({name: "Sample name", description: "Sample description"});
+  }
+}
+</file>
+
+<file path="services/index.ts">
+export * from './SampleService';
+</file>
+
+<file path="services/SampleService.ts">
+import {Autowire, AutowireComponent} from "../app/expressDecorator";
+import {SampleRepositoryInterface} from "../repositories";
+import {SampleModel} from "../models/SampleModel";
+
+export interface SampleServiceInterface {
+  sampleMethod: () => SampleModel;
+}
+
+@AutowireComponent
+export class SampleService implements SampleServiceInterface {
+
+  @Autowire("SampleRepository")
+  private sampleRepository: SampleRepositoryInterface;
+
+  sampleMethod() {
+    return this.sampleRepository.getSampleData();
+  }
+}
+</file>
+
+</files>
